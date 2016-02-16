@@ -18,8 +18,8 @@ This Method is to ensure to get all nodes to new batman-adv without loosing one.
 Create a file "modules" , add the following content in your site directory:
 
 GLUON_SITE_FEEDS="v14-to-v15-helper"<br>
-PACKAGES_V14-TO-V15-HELPER_REPO=https://github.com/ffac/gluon-ssid-changer.git<br>
-PACKAGES_V14-TO-V15-HELPER_COMMIT=0f354f7220bd86636472d0ac800343582b3e7497<br>
+PACKAGES_V14-TO-V15-HELPER_REPO=https://github.com/viisauksena/gluon-v14tov15-helper.git<br>
+PACKAGES_V14-TO-V15-HELPER_COMMIT=1237fac742e2659bbd76d3e88833ec30805501d2<br>
 
 With this done you can add the package gluon-v14tov15-helper to your site.mk
 
