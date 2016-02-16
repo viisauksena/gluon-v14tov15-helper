@@ -31,7 +31,7 @@ gwl=$(batctl gwl -H |wc -l) ; if [ $gwl != 0 ]; then exit 1; fi
 
 # check if freifunk as we know it is nearby
 frssid=$(uci get wireless.client_radio0.ssid)
-: ${frssid:=freiurg.freifunk.net} # if for whatever reason frssid is NULL
+: ${frssid:=freiburg.freifunk.net} # if for whatever reason frssid is NULL
 many=$(iwinfo phy0 scan |grep $frssid | wc -l)
 
 # connect to freifunk get dhcp lease
@@ -44,7 +44,7 @@ fi
 
 # just in case v6 dns resolving is strange
 # TODO TODO TODO
-# something is wrong here .. if if is generated and all autoupdater /wget will throw v6 permission denied
+# something is wrong here .. if IFace is generated and all autoupdater /wget will throw v6 permission denied
 # TODO TODO TODO
 echo 1 > /proc/sys/net/ipv6/conf/all/accept_ra
 echo 1 > /proc/sys/net/ipv6/conf/all/autoconf
@@ -57,7 +57,7 @@ if [ $(uci get autoupdater.settings.enabled) = 1 ]; then
 	autoupdater -f
 fi
 
-# if autoupdater run correct you should never reach this point
-# better safe than sorry - taking IF down
+# if autoupdater and first checks above run correct you should never reach this point
+# better safe than sorry - taking new IF down
 iw update del
 
