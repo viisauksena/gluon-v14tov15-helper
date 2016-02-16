@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# script to make batman v15 update and not leaving meshnodes behind
+# a node which looses connection (because a uplink mesh node is talking newer 
+# batman v15) try to log in as client in a network with well known essid
+# and forces a autoupdate (if its on in general)
+#
+# the idea is to rollout FW with this cronjob-script inside
+# and then do normal update procedure 
+# you then only have to have "some" v15 and "some" v14 gateways
+# normaly this should go realy in a matter of some days so you can 
+# quickly go on having more and more of your gateways speaking batman-v15
+# (just leaving a lonely SN for the superlates .. and the ones who need 
+#  time for manual updates ...)
+#
+# this script do not do any harm if running for years other than rising
+# autoupdater frequency and is only well suited for iw phy0:client0
+
+# check gw
+# quick and dirty do it 4 times every 30 seconds
+# to prevent false positives
+gwl=$(batctl gwl -H |wc -l) ; if [ $gwl != 0 ]; then exit 1; fi ; sleep 30
+gwl=$(batctl gwl -H |wc -l) ; if [ $gwl != 0 ]; then exit 1; fi ; sleep 30 
+gwl=$(batctl gwl -H |wc -l) ; if [ $gwl != 0 ]; then exit 1; fi ; sleep 30 
+gwl=$(batctl gwl -H |wc -l) ; if [ $gwl != 0 ]; then exit 1; fi
+
+# if wlan0 is desired (only in configmode where we do not want autoupdater)
+# ifconfig wlan0 up
+# iw wlan0 connect freiburg.freifunk.net
+# udhcp -b -i wlan0 
+
+# check if freifunk as we know it is nearby
+frssid=$(uci get wireless.client_radio0.ssid)
+: ${frssid:=freiurg.freifunk.net} # if for whatever reason frssid is NULL
+many=$(iwinfo phy0 scan |grep $frssid | wc -l)
+
+# connect to freifunk get dhcp lease
+if [ $many != 0 ]; then
+	iw phy0 interface add update type managed
+	ifconfig update up
+	iw update connect $frssid
+	udhcpc -B -b -i update
+fi
+
+# just in case v6 dns resolving is strange
+# TODO TODO TODO
+# something is wrong here .. if if is generated and all autoupdater /wget will throw v6 permission denied
+# TODO TODO TODO
+echo 1 > /proc/sys/net/ipv6/conf/all/accept_ra
+echo 1 > /proc/sys/net/ipv6/conf/all/autoconf
+
+# just in case dns doesnt work , add extra foo
+echo "nameserver 10.60.0.100" >> /etc/resolv.conf
+echo "nameserver 4.2.2.2" >> /etc/resolv.conf
+
+if [ $(uci get autoupdater.settings.enabled) = 1 ]; then
+	autoupdater -f
+fi
+
+# if autoupdater run correct you should never reach this point
+# better safe than sorry - taking IF down
+iw update del
+
