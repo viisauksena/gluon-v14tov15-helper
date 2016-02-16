@@ -23,22 +23,26 @@ The Node simply login in the next Frefiunk node as normal client.
 This Method is to ensure to get all nodes to new batman-adv without loosing one. 
 
 ## Create a file "modules" , add the following content in your site directory:
-
+```
 GLUON_SITE_FEEDS="v14-to-v15-helper"<br>
 PACKAGES_V14-TO-V15-HELPER_REPO=https://github.com/viisauksena/gluon-v14tov15-helper.git<br>
 PACKAGES_V14-TO-V15-HELPER_COMMIT=b8410a4621ba8b61896802218f6c9a4ad6df5821<br>
 PACKAGES_V14-TO-V15-HELPER_BRANCH=master<br>
+```
 or if you like the debugversion
+```
 GLUON_SITE_FEEDS="v14-to-v15-helper"<br>
 PACKAGES_V14-TO-V15-HELPER_REPO=https://github.com/viisauksena/gluon-v14tov15-helper.git<br>
 PACKAGES_V14-TO-V15-HELPER_COMMIT=40c7797c6bf69f0049cd53fe6ec5f3f1e2024576<br>
 PACKAGES_V14-TO-V15-HELPER_BRANCH=debugmode<br>
-
+```
 ## you can add the package gluon-v14tov15-helper to your site.mk
 
-## This skript is tested with Gluon 2016.1 
+## tested with Gluon 2016.1 
+TP 841N v10 and v9  - TP710v1
 
-## this will NOT, or very badly work with single-gateway-comunitys, fastD-limit=1
+
+## this will NOT work with single-gateway-comunitys, fastD-limit=1, l2tp
 
 ## side effect
 you will minimize v14servers - because nodes otherwise could accidently connect on all fastd connections to v14 - even when upgraded already to v15
