@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # script to help meshnodes make an autoupdate
 # a node which looses connection (because a uplink mesh node is talking newer 
@@ -7,6 +7,9 @@
 #
 # this script do not do any harm if running for years
 # more Info: https://github.com/viisauksena/gluon-v14tov15-helper
+
+# some cron debug help , write in ram 
+echo "v14v15 helper successfully startet at $(date +%y%m%d_%H%M)" > /tmp/v14_lastrun
 
 # if your script is dependend on autoupdater, do only uptate if its realy enabled!
 if [ $(uci get autoupdater.settings.enabled) = 0 ]; then exit 1; fi
