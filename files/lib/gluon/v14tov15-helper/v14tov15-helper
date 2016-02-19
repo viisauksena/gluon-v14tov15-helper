@@ -61,4 +61,5 @@ autoupdater -f
 # if autoupdater and first checks above run correct you should never reach this point
 # better safe than sorry - taking new IF down
 iw update del
+exit 21
 
