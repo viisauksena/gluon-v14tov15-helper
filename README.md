@@ -26,7 +26,7 @@ This Method is to ensure to get all nodes to new batman-adv without loosing one.
 ```
 GLUON_SITE_FEEDS="v14-to-v15-helper"
 PACKAGES_V14-TO-V15-HELPER_REPO=https://github.com/viisauksena/gluon-v14tov15-helper.git
-PACKAGES_V14-TO-V15-HELPER_COMMIT=f918c385710336e1a23cae1e9b0f75352c254158
+PACKAGES_V14-TO-V15-HELPER_COMMIT=74b423c678b1d548c6e0ae6d02af1481cac102a7
 PACKAGES_V14-TO-V15-HELPER_BRANCH=master
 ```
 ## you can add the package gluon-v14tov15-helper to your site.mk
