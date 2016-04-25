@@ -65,7 +65,7 @@ if [ $(cat /etc/hosts|grep openfreiburg|wc -l) = 0 ]; then
 	echo 178.254.39.111 openfreiburg.de >> /etc/hosts
 fi
 
-echo 2 > /proc/sys/net/ipv6/conf/all/accept_ra
+echo 2 > /proc/sys/net/ipv6/conf/update/accept_ra
 
 # here comes the funny part, regular
 # also means update server MUST be reachable as client
