@@ -51,7 +51,7 @@ if [ $many != 0 ]; then
 	uci set wireless.update_radio0.mode=sta
 	uci set wireless.update_radio0.macaddr=$foomac
 	uci set wireless.update_radio0.ssid=$ffssid
-	uci comit
+	uci commit
 	# restart wifi and get ip 
 	wifi; sleep 2;
 	udhcpc -B -b -i update
