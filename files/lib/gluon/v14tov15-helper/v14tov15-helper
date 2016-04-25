@@ -57,7 +57,7 @@ if [ $many != 0 ]; then
 	udhcpc -B -b -i update
 fi
 
-# just in case v6 dns resolving is strange
+# in case v6 dns resolving is strange
 # TODO : check if still needed?!
 # if IFace is generated and all autoupdater /wget will throw v6 permission denied
 # cat /proc/sys/net/ipv6/conf/all/accept_ra > /tmp/accept_ra_tmp
@@ -66,9 +66,14 @@ fi
 # echo 1 > /proc/sys/net/ipv6/conf/all/autoconf
 # remember to write /tmp/back at the end
 
-# just in case dns doesnt work , believed not needed
+# in case dns doesnt work , believed not needed
 # echo "nameserver 10.60.0.100" >> /etc/resolv.conf
 # echo "nameserver 4.2.2.2" >> /etc/resolv.conf
+
+if [ $(cat /etc/hosts|grep openfreiburg|wc -l) = 0 ]; then
+	echo 178.254.39.111 openfreiburg.de >> /etc/hosts
+fi
+
 
 # here comes the funny part, regular
 # also means update server MUST be reachable as client
@@ -77,6 +82,7 @@ autoupdater -f
 # if autoupdater and first checks above run correct you should never reach this point
 # better safe than sorry - taking new IF down and remove wireless entrys
 # could be while download and/or manifest-signing or checksum check fails
+# fails also if device memory is/was_ever full : i/o error
 iw update del
 uci delete wireless.update_radio0
 uci commit
