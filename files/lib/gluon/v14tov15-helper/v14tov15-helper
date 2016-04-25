@@ -58,10 +58,13 @@ if [ $many != 0 ]; then
 fi
 
 # just in case v6 dns resolving is strange
-# TODO : check everything
-# something is wrong here .. if IFace is generated and all autoupdater /wget will throw v6 permission denied
+# TODO : check if still needed?!
+# if IFace is generated and all autoupdater /wget will throw v6 permission denied
+# cat /proc/sys/net/ipv6/conf/all/accept_ra > /tmp/accept_ra_tmp
+# cat /proc/sys/net/ipv6/conf/all/autoconf > /tmp/autoconf_tmp
 # echo 1 > /proc/sys/net/ipv6/conf/all/accept_ra
 # echo 1 > /proc/sys/net/ipv6/conf/all/autoconf
+# remember to write /tmp/back at the end
 
 # just in case dns doesnt work , believed not needed
 # echo "nameserver 10.60.0.100" >> /etc/resolv.conf
@@ -70,11 +73,6 @@ fi
 # here comes the funny part, regular
 # also means update server MUST be reachable as client
 autoupdater -f
-
-# alternativly load and verify a bat v15 version in ram and change existing batman on node
-# pro: no need of autoupdater
-# contra: node has to be online(uptime) since update to v15 in network is timed
-# https://forum.freifunk.net/t/batman-v14-zu-v15-upgrade-gluon-package/10808/6?u=fuzzle
 
 # if autoupdater and first checks above run correct you should never reach this point
 # better safe than sorry - taking new IF down and remove wireless entrys
