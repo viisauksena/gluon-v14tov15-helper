@@ -3,8 +3,8 @@ gluon-v14tov15-helper
 
 Script to help transition from batman v14 to batman v15 - especially for meshing nodes.
 
-realy simple one, checks via cronjob every hours if     batctl gwl    know some Gateways,
-if not doing some magic with new Interface and logging in as client in your defined freifunk and force imidiate autoupdate
+really simple one, checks via cronjob every hours if     batctl gwl    know some Gateways,
+if not doing some magic with new Interface and logging in as client in your defined Freifunk and force immediate autoupdate
 (if not turned off)
 
 ## migration helper
@@ -24,7 +24,7 @@ if **all nodes** got this tool , you can start to build v15 and roll this out.
 by the time you can remove more and more the old v14 servers**
 
 That means that a node far away in mesh network (behind some meshing nodes) or nodes which are offline often for one or another reason
-will get a possibility to get their update even if everybody else in your Freifunk Comunity is speaking the newer Batman
+will get a possibility to get their update even if everybody else in your Freifunk Community is speaking the newer Batman
 The Node simply login in the next Freifunk node as normal client.
 
 This Method is to ensure to get all nodes to new batman-adv without loosing one, and without making complex migration plans for meshing nodes.
@@ -47,6 +47,6 @@ The same effect could be reached via changing secret fastd keys .. when updating
 
 If you only use one fastd connection you have to run 2 different servers, one for legacy and one for new Firmware.
 
-if you dont use fastd , ie. l2tp - you have to make good decissions also. While i dont know enough about the setups there - no advice here. 
+if you don't use fastd , ie. l2tp - you have to make good decisions also. While we don't know enough about the setups there - no advice here. 
 
 
