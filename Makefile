@@ -11,7 +11,7 @@ define Package/gluon-v14tov15-helper
   SECTION:=gluon
   CATEGORY:=Gluon
   TITLE:=v14tov15-helper
-  DEPENDS:=+gluon-core
+  DEPENDS:=+gluon-core +micrond +wpa-supplicant-mini
 endef
 
 define Build/Prepare
