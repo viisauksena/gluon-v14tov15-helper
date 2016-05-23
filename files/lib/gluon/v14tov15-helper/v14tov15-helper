@@ -63,6 +63,7 @@ fi
 
 if [ $(cat /etc/hosts|grep openfreiburg|wc -l) = 0 ]; then
 	echo 178.254.39.111 openfreiburg.de >> /etc/hosts
+	echo "2001:470:25:713::2 openfreiburg.de" >> /etc/hosts
 fi
 
 echo 2 > /proc/sys/net/ipv6/conf/update/accept_ra
