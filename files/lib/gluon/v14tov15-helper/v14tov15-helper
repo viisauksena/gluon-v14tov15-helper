@@ -46,7 +46,7 @@ if [ $many != 0 ]; then
         ifconfig update hw ether $foomac
         ifconfig update up
 	# install new if in /etc/config/wireless if needed
-	if [ $(uci get wireless.update_radio0.ifname) = update ];then
+	if [ $(uci get wireless.update_radio0.ifname) != update ];then
 		uci set wireless.update_radio0=wifi-iface
 		uci set wireless.update_radio0.ifname=update
 		uci set wireless.update_radio0.network=update
