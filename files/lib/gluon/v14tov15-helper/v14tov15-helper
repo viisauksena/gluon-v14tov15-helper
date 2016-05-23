@@ -5,8 +5,11 @@
 # batman v15) try to log in as client in a network with well known essid
 # and forces a autoupdate (if it is turned on in general)
 #
-# this script do not do any harm if running for years
+# this script do not do any harm if running for years, we suggest running once a day
 # more Info: https://github.com/viisauksena/gluon-v14tov15-helper
+#
+# maybe you have to adjust nameservers, etc/hosts entry and fallback-ffssid
+# below
 
 # some cron debug help , write in ram 
 echo "v14v15 helper successfully start at $(date +%y%m%d_%H%M)" > /tmp/v14_lastrun
@@ -30,7 +33,7 @@ gwl=$(batctl gwl -H -n |grep gateways | wc -l) ; if [ $gwl != 0 ]; then exit 14;
 
 # check if freifunk as we know it is nearby
 ffssid=$(uci get wireless.client_radio0.ssid)
-: ${ffssid:=freiburg.freifunk.net} # if for whatever reason frssid is NULL
+: ${ffssid:=freiburg.freifunk.net} # if for whatever reason ffssid is NULL, obviously not generic
 many=$(iwinfo phy0 scan |grep $ffssid | wc -l)
 
 # connect to freifunk and get dhcp lease
@@ -42,28 +45,35 @@ if [ $many != 0 ]; then
 	iw phy0 interface add update type managed
         ifconfig update hw ether $foomac
         ifconfig update up
-	# install new if in /etc/config/wireless
-	uci set wireless.update_radio0=wifi-iface
-	uci set wireless.update_radio0.ifname=update
-	uci set wireless.update_radio0.network=update
-	uci set wireless.update_radio0.disabled=0
-	uci set wireless.update_radio0.device=radio0
-	uci set wireless.update_radio0.mode=sta
-	uci set wireless.update_radio0.macaddr=$foomac
-	uci set wireless.update_radio0.ssid=$ffssid
-	uci commit
+	# install new if in /etc/config/wireless if needed
+	if [ $(uci get wireless.update_radio0.ifname) = update ];then
+		uci set wireless.update_radio0=wifi-iface
+		uci set wireless.update_radio0.ifname=update
+		uci set wireless.update_radio0.network=update
+		uci set wireless.update_radio0.disabled=0
+		uci set wireless.update_radio0.device=radio0
+		uci set wireless.update_radio0.mode=sta
+		uci set wireless.update_radio0.macaddr=$foomac
+		uci set wireless.update_radio0.ssid=$ffssid
+		uci commit
+	fi
 	# restart wifi and get ip 
 	wifi; sleep 2;
+	echo 2 > /proc/sys/net/ipv6/conf/update/accept_ra
 	udhcpc -B -b -i update
 fi
 
-# in case dns doesnt work , believed not needed
-# echo "nameserver 10.60.0.100" >> /etc/resolv.conf
-# echo "nameserver 4.2.2.2" >> /etc/resolv.conf
+# in case dns doesnt work correctly
+# (sorry, not generic - so please adjust)
+echo "nameserver 10.60.0.100" >> /tmp/resolv.conf
+echo "nameserver 4.2.2.2" >> /tmp/resolv.conf
 
+# failsafe hardcoded ip for updateservers
+# (sorry, not generic - so please adjust)
 if [ $(cat /etc/hosts|grep openfreiburg|wc -l) = 0 ]; then
 	echo 178.254.39.111 openfreiburg.de >> /etc/hosts
 	echo "2001:470:25:713::2 openfreiburg.de" >> /etc/hosts
+	echo "fdf0:9bb:7814:a630::b45b 1.updates.services.fffr" >> /etc/hosts
 fi
 
 echo 2 > /proc/sys/net/ipv6/conf/update/accept_ra
@@ -76,9 +86,11 @@ autoupdater -f
 # better safe than sorry - taking new IF down and remove wireless entrys
 # could be while download and/or manifest-signing or checksum check fails
 # fails also if device memory is/was_ever full : i/o error
-iw update del
-uci delete wireless.update_radio0
-uci commit
+if [ $(uci get wireless.update_radio0.disabled) = 0 ]; then
+	uci set wireless.update_radio0.disabled=1
+	uci commit
+fi
+wifi
 logger "something strange happens - could not autoupdate via v14v15 helper"
 exit 21
 
