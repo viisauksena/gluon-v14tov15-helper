@@ -70,10 +70,14 @@ echo "nameserver 4.2.2.2" >> /tmp/resolv.conf
 
 # failsafe hardcoded ip for updateservers
 # (sorry, not generic - so please adjust)
-if [ $(cat /etc/hosts|grep openfreiburg|wc -l) = 0 ]; then
+if [ $(cat /etc/hosts|grep "2001:470:25:713::2"|wc -l) = 0 ]; then
 	echo "2001:470:25:713::2 openfreiburg.de" >> /etc/hosts
-	echo "fdf0:9bb:7814:a630::b45b 1.updates.services.fffr" >> /etc/hosts
+fi
+if [ $(cat /etc/hosts|grep "178.254.39.111"|wc -l) = 0 ]; then
         echo 178.254.39.111 openfreiburg.de >> /etc/hosts
+fi
+if [ $(cat /etc/hosts|grep "fdf0:9bb:7814:a630::b45b"|wc -l) = 0 ]; then
+        echo "fdf0:9bb:7814:a630::b45b 1.updates.services.fffr" >> /etc/hosts
 fi
 
 echo 2 > /proc/sys/net/ipv6/conf/update/accept_ra
