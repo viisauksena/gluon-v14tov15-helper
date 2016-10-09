@@ -33,7 +33,7 @@ gwl=$(batctl gwl -H -n |grep gateways | wc -l)
 if [ $gwl -eq 0 ]; then echo "find batctl gwl - exit4" >> /tmp/v14_lastrun; exit 14; fi
 
 # check if freifunk as we know it is nearby
-ffssid=$(uci get wireless.client_radio0.ssid)
+# ffssid=$(uci get wireless.client_radio0.ssid) # fail with simplified ssid offline changer
 : ${ffssid:=freiburg.freifunk.net} # if for whatever reason ffssid is NULL, obviously not generic
 many=$(iwinfo phy0 scan |grep "$ffssid" | wc -l)
 
