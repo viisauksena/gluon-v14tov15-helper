@@ -1,65 +1,77 @@
 #!/bin/sh +x
 
-# script to help meshnodes make an autoupdate
-# a node which looses connection (because a uplink mesh node is talking newer 
-# batman v15) try to log in as client in a network with well known essid
-# and forces a autoupdate (if it is turned on in general)
+# this script will help meshnodes to make an autoupdate when a node looses connection 
+# because all uplink mesh nodes are talking an incompatible mesh protocol, for example  
+# batman v15. It will try to log in as a client into a network with well known essid
+# and force an autoupdate (if autoupdate is turned on in general)
 #
-# this script do not do any harm if running for years, we suggest running once a day
+# this script doesn't do any harm if running for years, we suggest running it once a day
 # more Info: https://github.com/viisauksena/gluon-v14tov15-helper
 #
-# maybe you have to adjust nameservers, etc/hosts entry and fallback-ffssid
+# maybe you have to adjust the nameservers, etc/hosts entry and fallback-SSID
 # below
 
-# some cron debug help , write in ram 
-echo "$0 successfully start at $(date +%y%m%d_%H%M)" > /tmp/v14_lastrun
+# fallback-SSID
+# ffssid=$(uci get wireless.client_radio0.ssid) # fail with some ssid offline changers
+: ${ffssid:=freiburg.freifunk.net} # if for whatever reason ffssid is NULL, obviously not generic
 
-# if your script is dependend on autoupdater, do only uptate if its realy enabled!
+# nameservers 
+NS1=10.60.0.100
+NS2=4.2.2.2
+NS3=10.60.0.110
+
+FAILSAVE_IP1=fdf0:9bb:7814:a630::007
+FAILSAVE_HOST1=firmware.fffr
+FAILSAVE_IP2=178.254.39.111
+FAILSAVE_HOST2=openfreiburg.de
+FAILSAVE_IP3=fdf0:9bb:7814:a630::b45b
+FAILSAVE_HOST3=1.updates.services.fffr
+
+# some cron debug help, writes into ram 
+echo "$0 start at $(date +%y%m%d_%H%M)" > /tmp/v14_lastrun
+
+# if your script is dependend on autoupdater, do only update if it's realy enabled:
 if [ $(uci get autoupdater.settings.enabled) = 0 ]; then 
-	echo "autoupdater not active - exit" > /tmp/v14_lastrun 
+	echo "autoupdater not active - exit" >> /tmp/v14_lastrun 
 	exit 1
 fi
 
-# check gw
-# quick and dirty do it 4 times every 30 seconds
+# check gw 4 times every 30 seconds
 # to highly prevent false positives
-gwl=$(batctl gwl -H -n |grep gateways | wc -l)
-if [ $gwl -eq 0 ]; then echo "find batctl gwl - exit1" >> /tmp/v14_lastrun; exit 11; fi ; sleep 30
-gwl=$(batctl gwl -H -n |grep gateways | wc -l)
-if [ $gwl -eq 0 ]; then echo "find batctl gwl - exit2" >> /tmp/v14_lastrun; exit 12; fi ; sleep 30 
-gwl=$(batctl gwl -H -n |grep gateways | wc -l)
-if [ $gwl -eq 0 ]; then echo "find batctl gwl - exit3" >> /tmp/v14_lastrun; exit 13; fi ; sleep 30 
-gwl=$(batctl gwl -H -n |grep gateways | wc -l)
-if [ $gwl -eq 0 ]; then echo "find batctl gwl - exit4" >> /tmp/v14_lastrun; exit 14; fi
+for i in 11 12 13 14; do
+	gwl=$(batctl gwl -H -n |grep gateways | wc -l)
+	if [ $gwl -eq 0 ]; then
+		echo "find batctl gwl - exit $i" >> /tmp/v14_lastrun; exit $i
+	fi
+	sleep 3
+done
 
-# check if freifunk as we know it is nearby
-# ffssid=$(uci get wireless.client_radio0.ssid) # fail with simplified ssid offline changer
-: ${ffssid:=freiburg.freifunk.net} # if for whatever reason ffssid is NULL, obviously not generic
+# check if Freifunk as we know it is nearby
 many=$(iwinfo phy0 scan |grep "$ffssid" | wc -l)
 
 # connect to freifunk and get dhcp lease
 if [ $many != 0 ]; then
 	# generate foo mac, and alternative if failing
-        foomac=42:42:$(iwinfo | grep Acc |head -n1 |grep -oE '[^ ]+$' |cut -d":" -f 3-6)
+	foomac=42:42:$(iwinfo | grep Acc |head -n1 |grep -oE '[^ ]+$' |cut -d":" -f 3-6)
 	: ${foomac:=42:42:23:$(date +%H:%M:%S)}
 	# install new if in /etc/config/wireless if needed
-	if [ $(uci get wireless.update_radio0.ifname) != "update" ];then
-	        echo "insert update IF via uci try wifi restart" >> /tmp/v14_lastrun
+	if [ $(uci get wireless.update_radio0.ifname) != "update" ]; then
+		echo "insert update IF via uci try wifi restart" >> /tmp/v14_lastrun
 		uci set wireless.update_radio0=wifi-iface
 		uci set wireless.update_radio0.ifname=update
 		uci set wireless.update_radio0.network=update
 		uci set wireless.update_radio0.disabled=0
 		uci set wireless.update_radio0.device=radio0
 		uci set wireless.update_radio0.mode=sta
-		uci set wireless.update_radio0.macaddr=$foomac
-		uci set wireless.update_radio0.ssid=$ffssid
+		uci set wireless.update_radio0.macaddr="$foomac"
+		uci set wireless.update_radio0.ssid="$ffssid"
 	else 
 		echo "reactivate known update if and restart wifi" >> /tmp/v14_lastrun
 		uci set wireless.update_radio0.disabled=0
 	fi
 	# restart wifi and get ip 
 	wifi; sleep 5;
-        echo "accept ra on update if and try to get ip" >> /tmp/v14_lastrun
+	echo "accept ra on update if and try to get ip" >> /tmp/v14_lastrun
 	echo 2 > /proc/sys/net/ipv6/conf/update/accept_ra
 	udhcpc -B -b -i update
 else 
@@ -67,39 +79,30 @@ else
 	exit 33
 fi
 
-# in case dns doesnt work correctly
-# (sorry, not generic - so please adjust)
-echo "nameserver 10.60.0.100" >> /tmp/resolv.conf
-echo "nameserver 4.2.2.2" >> /tmp/resolv.conf
-echo "nameserver 10.60.0.110" >> /tmp/resolv.conf
+# in case dns doesn't work correctly
+echo "nameserver $NS1" >> /tmp/resolv.conf
+echo "nameserver $NS2" >> /tmp/resolv.conf
+echo "nameserver $NS3" >> /tmp/resolv.conf
 
-# failsafe hardcoded ip for updateservers
-# (sorry, not generic - so please adjust)
-if [ $(cat /etc/hosts|grep "fdf0:9bb:7814:a630::007"|wc -l) = 0 ]; then
-	echo "fdf0:9bb:7814:a630::007 firmware.fffr" >> /etc/hosts
+# failsafe ips for updateservers
+if [ $(cat /etc/hosts|grep "$FAILSAVE_IP1"|wc -l) = 0 ]; then
+	echo "$FAILSAVE_IP1 $FAILSAVE_HOST1" >> /etc/hosts
 fi
-#if [ $(cat /etc/hosts|grep "2001:470:25:713::2"|wc -l) = 0 ]; then
-#	echo "2001:470:25:713::2 openfreiburg.de" >> /etc/hosts
-#fi
-if [ $(cat /etc/hosts|grep "178.254.39.111"|wc -l) = 0 ]; then
-        echo 178.254.39.111 openfreiburg.de >> /etc/hosts
+if [ $(cat /etc/hosts|grep "$FAILSAVE_IP2"|wc -l) = 0 ]; then
+	echo "$FAILSAVE_IP2 $FAILSAVE_HOST2" >> /etc/hosts
 fi
-if [ $(cat /etc/hosts|grep "fdf0:9bb:7814:a630::b45b"|wc -l) = 0 ]; then
-        echo "fdf0:9bb:7814:a630::b45b 1.updates.services.fffr" >> /etc/hosts
+if [ $(cat /etc/hosts|grep "$FAILSAVE_IP3"|wc -l) = 0 ]; then
+	echo "$FAILSAVE_IP3 $FAILSAVE_HOST3" >> /etc/hosts
 fi
 
 # here comes the funny part, regular
 # also means update server MUST be reachable as client
 autoupdater -f
 
-# if autoupdater and first checks above run correct you should never reach this point
-# better safe than sorry - taking new IF down
-# could be while download and/or manifest-signing or checksum check fails
-# fails also if device memory is/was_ever full : i/o error
+# if the autoupdater fails, take the new IF down
 if [ $(uci get wireless.update_radio0.disabled) = 0 ]; then
 	uci set wireless.update_radio0.disabled=1
 fi
 wifi
 logger "something strange happens - could not autoupdate via $0"
 exit 21
-
