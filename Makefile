@@ -5,7 +5,7 @@ PKG_SOURCE_PROTO:=git
 PKG_VERSION:=2
 PKG_SOURCE_URL:=https://github.com/viisauksena/gluon-v14tov15-helper.git
 
-PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
 include ../gluon.mk
 
