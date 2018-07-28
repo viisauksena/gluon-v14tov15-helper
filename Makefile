@@ -4,12 +4,10 @@ PKG_NAME:=gluon-v14tov15-helper
 PKG_SOURCE_PROTO:=git
 PKG_VERSION:=2
 PKG_SOURCE_URL:=https://github.com/viisauksena/gluon-v14tov15-helper.git
-PKG_SOURCE_DATE:=2018-07-28
-PKG_SOURCE_VERSION:=4c256517f08d5a53aca8db8323e6997e12780a78
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
-include $(INCLUDE_DIR)/package.mk
+include ../gluon.mk
 
 define Package/gluon-v14tov15-helper
   SECTION:=gluon
